@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视觉艺术家进化计划 Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        
+        :root {
+            --primary: #000000;
+            --accent: #3b82f6;
+        }
+        body { background-color: #fcfcfc; font-family: 'Inter', -apple-system, sans-serif; transition: background 0.3s; }
+        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(0,0,0,0.08); border-radius: 24px; }
+        .progress-ring-circle { transition: stroke-dashoffset 0.5s ease; transform: rotate(-90deg); transform-origin: 50% 50%; }
+        .streak-badge { background: linear-gradient(135deg, #f59e0b, #ef4444); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
+        .task-item { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .task-item:hover { border-color: var(--accent); transform: translateX(4px); }
+        input[type="checkbox"] { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #e2e8f0; appearance: none; cursor: pointer; transition: all 0.2s; position: relative; }
+        input[type="checkbox"]:checked { background-color: #10b981; border-color: #10b981; }
+        input[type="checkbox"]:checked::after { content: '✓'; color: white; position: absolute; left: 5px; top: -1px; font-size: 14px; font-weight: bold; }
+        input[type="checkbox"]:checked + label { color: #94a3b8; }
+        .inspiration-img { width: 100%; height: 120px; object-fit: cover; border-radius: 12px; background: #f1f5f9; }
+    </style>
+</head>
+<body class="pb-32">
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-slate-100 p-4">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-black rounded-xl flex items-center justify-center text-white shadow-lg shadow-black/20">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h1 class="text-xl font-black tracking-tighter uppercase italic">The Evolution <span class="text-blue-600">v2.1</span></h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <div id="streak-counter" class="streak-badge text-white px-5 py-2 rounded-2xl text-xs font-black flex items-center gap-2">
+                    <i class="fas fa-fire-alt"></i> <span id="streak-days">0</span> DAYS
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-5xl mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Left Column (Main Protocol) -->
+        <div class="lg:col-span-8 space-y-8">
+            
+            <!-- Progress & Quote Card -->
+            <div class="glass-card p-8 flex flex-col md:flex-row items-center gap-8 bg-gradient-to-br from-white to-blue-50/30">
+                <div class="relative w-32 h-32">
+                    <svg class="w-full h-full">
+                        <circle class="text-slate-100" stroke-width="8" stroke="currentColor" fill="transparent" r="58" cx="64" cy="64"/>
+                        <circle id="progress-ring" class="text-blue-600 progress-ring-circle" stroke-width="8" stroke-dasharray="364.4" stroke-dashoffset="364.4" stroke-linecap="round" stroke="currentColor" fill="transparent" r="58" cx="64" cy="64"/>
+                    </svg>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <span id="progress-text" class="text-2xl font-black text-slate-800">0%</span>
+                        <span class="text-[10px] uppercase text-slate-400 font-bold tracking-widest">Done</span>
+                    </div>
+                </div>
+                <div class="flex-grow text-center md:text-left">
+                    <h2 id="quote-en" class="text-lg font-bold text-slate-800 leading-tight mb-2">"Your first 10,000 photographs are your worst."</h2>
+                    <p id="quote-zh" class="text-sm text-slate-500 italic">“你拍的前一万张照片都是烂片。” —— 亨利·卡蒂埃-布列松</p>
+                </div>
+            </div>
+
+            <!-- Task List -->
+            <section class="space-y-4">
+                <div class="flex justify-between items-center px-2">
+                    <h2 class="text-xl font-black flex items-center gap-2">
+                        <i class="fas fa-list-ul text-blue-500"></i> DAILY PROTOCOL
+                    </h2>
+                    <span id="date-label" class="text-xs font-mono text-slate-400 font-bold uppercase"></span>
+                </div>
+                
+                <div id="task-container" class="grid gap-3">
+                    <!-- Tasks injected by JS -->
+                </div>
+            </section>
+        </div>
+
+        <!-- Right Column (Tools & Inspiration) -->
+        <aside class="lg:col-span-4 space-y-8">
+            
+            <!-- Vocabulary Card -->
+            <div class="glass-card p-6 border-l-4 border-blue-500 shadow-sm">
+                <h3 class="font-bold mb-4 flex items-center gap-2 text-slate-800">
+                    <i class="fas fa-language text-blue-500"></i> KEYWORDS
+                </h3>
+                <div id="vocabulary-list" class="space-y-2">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+
+            <!-- Moodboard Card -->
+            <div class="glass-card p-6">
+                <h3 class="font-bold mb-4 flex items-center gap-2 text-purple-600">
+                    <i class="fas fa-images"></i> VISUAL MOODBOARD
+                </h3>
+                <div id="mood-board" class="grid grid-cols-2 gap-2 mb-4">
+                    <!-- Images injected by JS -->
+                </div>
+                <div class="relative">
+                    <input type="text" id="img-input" placeholder="Paste Pinterest/Image URL..." class="w-full text-xs p-3 pr-10 rounded-xl bg-slate-100 border-none outline-none focus:ring-2 ring-blue-500/20 transition-all">
+                    <button id="add-img-btn" class="absolute right-2 top-1.5 text-slate-400 hover:text-blue-500 p-1">
+                        <i class="fas fa-plus-circle"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Creative Notes -->
+            <div class="glass-card p-6 bg-slate-900 text-white shadow-xl shadow-slate-200">
+                <h3 class="font-bold mb-4 flex items-center gap-2">
+                    <i class="fas fa-pen-nib text-yellow-400"></i> CREATIVE NOTES
+                </h3>
+                <textarea id="notes-area" class="w-full h-32 bg-transparent text-sm text-slate-400 resize-none border-none outline-none focus:text-white transition-colors" placeholder="Today's inspiration, lighting setups, or English expressions..."></textarea>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Bottom Management Bar -->
+    <div class="fixed bottom-0 left-0 right-0 p-6 bg-white/80 backdrop-blur-xl border-t border-slate-100 z-50">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-6">
+                <div>
+                    <span class="block text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1">Year 1 Evolution</span>
+                    <div class="flex items-center gap-2">
+                        <div class="w-48 h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div id="year-progress-bar" class="h-full bg-black transition-all duration-1000" style="width: 0%"></div>
+                        </div>
+                        <span id="year-progress-text" class="text-xs font-bold font-mono">0.0%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="exportData()" class="px-4 py-2 text-[10px] font-black uppercase tracking-wider text-slate-500 hover:text-black transition-colors" title="Backup your data">
+                    <i class="fas fa-download mr-1"></i> Backup
+                </button>
+                <button onclick="resetDaily()" class="px-4 py-2 text-[10px] font-black uppercase tracking-wider text-slate-400 hover:text-red-500 transition-colors">
+                    <i class="fas fa-sync-alt mr-1"></i> Reset Day
+                </button>
+                <button class="bg-black text-white px-8 py-2.5 rounded-full text-xs font-black hover:scale-105 active:scale-95 transition-all shadow-lg shadow-black/10">
+                    SAVE PROGRESS
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA CONFIGURATION ---
+        const taskData = [
+            { id: 'fit-stretch', title: 'Stretching (10min)', desc: 'Focus on spine and shoulders for posture', icon: 'fa-compress-arrows-alt', color: 'red' },
+            { id: 'fit-cardio', title: 'Cardio Engine (20min)', desc: 'Boost endurance and mental clarity', icon: 'fa-heartbeat', color: 'red' },
+            { id: 'eng-podcast', title: 'Immersive Listening (20min)', desc: 'Habituate to native rhythm and intonation', icon: 'fa-headphones', color: 'blue' },
+            { id: 'eng-speak', title: 'Shadowing Practice', desc: 'Vogue 73 Questions or master interviews', icon: 'fa-microphone', color: 'blue' },
+            { id: 'art-study', title: 'Visual Analysis', desc: 'Break down lighting in 5 master images', icon: 'fa-lightbulb', color: 'purple' }
+        ];
+
+        const vocabData = [
+            { en: 'Aesthetic', cn: '审美/美学' },
+            { en: 'Composition', cn: '构图' },
+            { en: 'Perspective', cn: '视角/透视' },
+            { en: 'Juxtaposition', cn: '并列/对比' }
+        ];
+
+        const quotes = [
+            { en: "Style is a way to say who you are without having to speak.", zh: "风格是在不需要说话的情况下，表达你是谁的一种方式。" },
+            { en: "Your first 10,000 photographs are your worst.", zh: "你拍的前一万张照片都是烂片。" },
+            { en: "Stay hungry, stay foolish.", zh: "求知若渴，虚怀若谷。" }
+        ];
+
+        // --- CORE LOGIC ---
+        const taskContainer = document.getElementById('task-container');
+        const streakText = document.getElementById('streak-days');
+        const progressRing = document.getElementById('progress-ring');
+        const progressText = document.getElementById('progress-text');
+        const notesArea = document.getElementById('notes-area');
+
+        // Date Display
+        document.getElementById('date-label').innerText = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+        // Build UI
+        function init() {
+            // Tasks
+            taskData.forEach(task => {
+                const div = document.createElement('div');
+                div.className = 'task-item group flex items-center gap-4 p-5 bg-white border border-slate-100 rounded-3xl hover:shadow-xl transition-all shadow-sm';
+                div.innerHTML = `
+                    <input type="checkbox" id="${task.id}" class="task-checkbox">
+                    <label for="${task.id}" class="flex-grow cursor-pointer select-none">
+                        <span class="block font-bold text-slate-800 text-sm md:text-base tracking-tight">${task.title}</span>
+                        <span class="text-[11px] text-slate-400 italic font-medium opacity-80">${task.desc}</span>
+                    </label>
+                    <div class="w-10 h-10 rounded-2xl bg-${task.color}-50 text-${task.color}-500 flex items-center justify-center opacity-40 group-hover:opacity-100 transition-all">
+                        <i class="fas ${task.icon}"></i>
+                    </div>
+                `;
+                taskContainer.appendChild(div);
+            });
+
+            // Vocab
+            const vocabList = document.getElementById('vocabulary-list');
+            vocabData.forEach(v => {
+                const item = document.createElement('div');
+                item.className = 'p-3 bg-slate-50 rounded-xl flex justify-between items-center hover:bg-blue-50 transition-colors';
+                item.innerHTML = `<span class="font-mono font-bold text-blue-700 text-sm">${v.en}</span><span class="text-[10px] text-slate-400 font-bold uppercase">${v.cn}</span>`;
+                vocabList.appendChild(item);
+            });
+
+            // Load Data
+            loadAll();
+            updateProgress();
+            renderMoodBoard();
+            updateYearProgress();
+            
+            // Random Quote
+            const q = quotes[Math.floor(Math.random() * quotes.length)];
+            document.getElementById('quote-en').innerText = `"${q.en}"`;
+            document.getElementById('quote-zh').innerText = q.zh;
+        }
+
+        function updateProgress() {
+            const checks = document.querySelectorAll('.task-checkbox');
+            const total = checks.length;
+            const checked = Array.from(checks).filter(c => c.checked).length;
+            const percentage = Math.round((checked / total) * 100);
+
+            // Ring
+            const radius = 58;
+            const circ = 2 * Math.PI * radius;
+            progressRing.style.strokeDashoffset = circ - (percentage / 100) * circ;
+            progressText.innerText = `${percentage}%`;
+
+            // Save Tasks
+            checks.forEach(c => localStorage.setItem(`task_${c.id}`, c.checked));
+
+            // Streak logic
+            if (checked === total) {
+                const today = new Date().toDateString();
+                if (localStorage.getItem('last_comp_date') !== today) {
+                    let s = parseInt(localStorage.getItem('streak_count') || 0) + 1;
+                    localStorage.setItem('streak_count', s);
+                    localStorage.setItem('last_comp_date', today);
+                    streakText.innerText = s;
+                }
+            }
+        }
+
+        function updateYearProgress() {
+            // Calculate days passed since Jan 1st
+            const now = new Date();
+            const start = new Date(now.getFullYear(), 0, 0);
+            const diff = now - start;
+            const oneDay = 1000 * 60 * 60 * 24;
+            const dayOfYear = Math.floor(diff / oneDay);
+            const yearPerc = ((dayOfYear / 365) * 100).toFixed(1);
+            
+            document.getElementById('year-progress-bar').style.width = `${yearPerc}%`;
+            document.getElementById('year-progress-text').innerText = `${yearPerc}%`;
+        }
+
+        function loadAll() {
+            document.querySelectorAll('.task-checkbox').forEach(c => {
+                c.checked = localStorage.getItem(`task_${c.id}`) === 'true';
+                c.addEventListener('change', updateProgress);
+            });
+            streakText.innerText = localStorage.getItem('streak_count') || 0;
+            notesArea.value = localStorage.getItem('creative_notes') || '';
+        }
+
+        // Persistence
+        notesArea.addEventListener('input', () => localStorage.setItem('creative_notes', notesArea.value));
+
+        // Moodboard
+        const imgInput = document.getElementById('img-input');
+        const addBtn = document.getElementById('add-img-btn');
+
+        function addMoodImg() {
+            if (!imgInput.value) return;
+            let urls = JSON.parse(localStorage.getItem('mood_urls') || '[]');
+            urls.unshift(imgInput.value);
+            localStorage.setItem('mood_urls', JSON.stringify(urls.slice(0, 4)));
+            renderMoodBoard();
+            imgInput.value = '';
+        }
+
+        imgInput.addEventListener('keypress', (e) => e.key === 'Enter' && addMoodImg());
+        addBtn.addEventListener('click', addMoodImg);
+
+        function renderMoodBoard() {
+            const urls = JSON.parse(localStorage.getItem('mood_urls') || '[]');
+            const board = document.getElementById('mood-board');
+            board.innerHTML = '';
+            urls.forEach(url => {
+                const img = document.createElement('img');
+                img.src = url;
+                img.className = 'inspiration-img shadow-sm hover:scale-105 transition-transform cursor-pointer';
+                img.onerror = () => img.src = 'https://via.placeholder.com/150?text=Invalid+Link';
+                board.appendChild(img);
+            });
+            while (board.children.length < 2) {
+                const p = document.createElement('div');
+                p.className = 'inspiration-img flex items-center justify-center text-slate-300 text-[10px] font-bold uppercase bg-slate-50 border border-slate-100';
+                p.innerText = 'Empty Slot';
+                board.appendChild(p);
+            }
+        }
+
+        // Global Actions
+        function resetDaily() {
+            if (confirm('Restart today\'s protocol?')) {
+                document.querySelectorAll('.task-checkbox').forEach(c => {
+                    c.checked = false;
+                    localStorage.setItem(`task_${c.id}`, false);
+                });
+                updateProgress();
+            }
+        }
+
+        function exportData() {
+            const data = { ...localStorage };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `evolution_backup_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+        }
+
+        init();
+    </script>
+</body>
+</html>
